@@ -36,6 +36,9 @@ import CircularProgress from "@mui/material/CircularProgress";
 import './crimetable.css'
 import "../CriminalTable/criminaltablesidebar.css"
 import SearchBar from '@mkyy/mui-search-bar';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import CriminalImage from './criminal.webp';
+import './AnimatedDownloadButton.css'; // Import the CSS file for animations
 
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -99,6 +102,28 @@ function CrimeTable() {
   const handleSearch = labelOptionValue => {
     //...
     console.log(labelOptionValue);
+  };
+
+  //MEDIA DOWNLOAD BUTTON
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = () => {
+    // Simulate download process
+    setDownloading(true);
+    setTimeout(() => {
+      setDownloading(false);
+    }, 2000); // Simulating a 2-second download
+  };
+
+  //POLICE DOWNLOAD BUTTON
+  const [policedownloading, setPoliceDownloading] = useState(false);
+
+  const handlePoliceDownload = () => {
+    // Simulate download process
+    setPoliceDownloading(true);
+    setTimeout(() => {
+      setPoliceDownloading(false);
+    }, 2000); // Simulating a 2-second download
   };
 
 
@@ -174,15 +199,15 @@ function CrimeTable() {
                     {/* {popupshow && <CrimeDilog/>} */}
                   </Button>
                 </div>
-               
-                <div style={{paddingRight:'20px', float: "right", marginTop: "-30px" }}>
-              <SearchBar 
-                value={textFieldValue}
-                onChange={newValue => setTextFieldValue(newValue)}
-                onSearch={handleSearch}
-                className="searchbar"
-              />
-              </div>
+
+                <div style={{ paddingRight: '20px', float: "right", marginTop: "-30px" }}>
+                  <SearchBar
+                    value={textFieldValue}
+                    onChange={newValue => setTextFieldValue(newValue)}
+                    onSearch={handleSearch}
+                    className="searchbar"
+                  />
+                </div>
               </MDBox>
               <MDBox pt={3}>
                 {loading ? (
@@ -259,11 +284,22 @@ function CrimeTable() {
           <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
           <p id="info">Gender : {selectKey?.gender}</p>
           <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
-          <p id="info">Suspect : {selectKey?.suspect}</p>
-          <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
           <p id="info">Type : {selectKey?.type}</p>
           <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
           <Divider />
+
+          {/* SUSPECT DETAILS */}
+          <div class="suspect_box" style={{marginLeft:"50px", marginTop:"30px", paddingLeft:"20px",paddingTop:"30px" ,height:"130px",width:"80%",borderRadius:"15px",border:"1px solid #eee"}}>
+          <img src={CriminalImage} style={{borderRadius:"15PX",height:"70px",width:"70px",}} />
+          <p id="info_inspect" style={{marginTop:"-70px",marginLeft:"80px",fontSize:"20px",fontWeight:"bold",color:"black"}} > Name : {selectKey?.name} </p>
+          <p id="info" style={{marginTop:"-5px",marginLeft:"80px"}} > ID : #{selectKey?.suspect} </p>
+          
+          </div>
+          
+          <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
+         
+          <Divider />
+
           <p id="labz">Victim Details</p>
           <p id="info">Name : {selectKey?.victim.name}</p>
           <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
@@ -272,6 +308,7 @@ function CrimeTable() {
           <p id="info">Address : {selectKey?.victim.address}</p>
           <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
           <Divider />
+
           <p id="labz">Witness Details</p>
           <p id="info">Name : {selectKey?.witness.name}</p>
           <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
@@ -281,10 +318,40 @@ function CrimeTable() {
           <Divider />
           <p id="labz">Police Report</p>
           <p id="info">Report : {selectKey?.policeReport.details}</p>
+          <br/>
+          <div className="police-button-container">
+            <Button
+              variant="contained"
+              color="primary"
+              style={{color:"white"}}
+              disabled={policedownloading}
+              onClick={handlePoliceDownload}
+              className={`download-button ${policedownloading ? 'downloading' : ''}`}
+              startIcon={<CloudDownloadIcon />}
+            >
+              {policedownloading ? 'Downloading...' : 'Download'}
+            </Button>
+          </div>
+
           <Divider />
 
           <p id="labz">Media Report</p>
           <p id="info">Report : {selectKey?.mediaReport.details}</p>
+          <br/>
+         
+          <div className="button-container">
+            <Button
+              variant="contained"
+              color="primary"
+              style={{color:"white"}}
+              disabled={downloading}
+              onClick={handleDownload}
+              className={`download-button ${downloading ? 'downloading' : ''}`}
+              startIcon={<CloudDownloadIcon />}
+            >
+              {downloading ? 'Downloading...' : 'Download'}
+            </Button>
+          </div>
           <br />
         </div>
       </div>
