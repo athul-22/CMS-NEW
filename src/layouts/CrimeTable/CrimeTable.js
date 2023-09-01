@@ -72,6 +72,8 @@ function CrimeTable() {
 
   const [open, setOpen] = React.useState(false);
 
+  const [suspect, setsuspect] = useState({})
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -96,7 +98,25 @@ function CrimeTable() {
         setLoading(false); // Data loaded, set loading to false
 
       });
+
+
   }, []);
+
+  useEffect(() => {
+    Axios.get("/api/v1/app/criminal/get", {
+      params: {
+        id: selectKey?.suspect
+      }
+    })
+      .then((response) => {
+        console.log(response);
+        setsuspect(response.data.criminal);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [selectKey])
+
 
 
   const handleSearch = labelOptionValue => {
@@ -107,10 +127,11 @@ function CrimeTable() {
   //MEDIA DOWNLOAD BUTTON
   const [downloading, setDownloading] = useState(false);
 
-  const handleDownload = () => {
+  const handleMediaDownload = (filename) => {
     // Simulate download process
     setDownloading(true);
     setTimeout(() => {
+      downloadFile(`/public/mediaReport/${filename}`, filename)
       setDownloading(false);
     }, 2000); // Simulating a 2-second download
   };
@@ -118,13 +139,32 @@ function CrimeTable() {
   //POLICE DOWNLOAD BUTTON
   const [policedownloading, setPoliceDownloading] = useState(false);
 
-  const handlePoliceDownload = () => {
+  const handlePoliceDownload = (filename) => {
     // Simulate download process
     setPoliceDownloading(true);
     setTimeout(() => {
+      downloadFile(`/public/policeReport/${filename}`, filename)
       setPoliceDownloading(false);
     }, 2000); // Simulating a 2-second download
   };
+
+
+  const downloadFile = (path, fileName) => {
+    Axios.get(`/api/v1/app/file/get`, {
+      responseType: 'blob',
+      params: { fileId: path },
+    })
+      .then(function (res) {
+        var ee = document.createElement("a");
+        ee.href = URL.createObjectURL(new Blob([res.data]));
+        ee.setAttribute("download", fileName)
+        document.body.append(ee)
+        ee.click()
+      })
+      .catch(err => {
+        console.log(err);
+      })
+  }
 
 
 
@@ -286,18 +326,29 @@ function CrimeTable() {
           <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
           <p id="info">Type : {selectKey?.type}</p>
           <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
-          <Divider />
 
           {/* SUSPECT DETAILS */}
-          <div class="suspect_box" style={{marginLeft:"50px", marginTop:"30px", paddingLeft:"20px",paddingTop:"30px" ,height:"130px",width:"80%",borderRadius:"15px",border:"1px solid #eee"}}>
-          <img src={CriminalImage} style={{borderRadius:"15PX",height:"70px",width:"70px",}} />
-          <p id="info_inspect" style={{marginTop:"-70px",marginLeft:"80px",fontSize:"20px",fontWeight:"bold",color:"black"}} > Name : {selectKey?.name} </p>
-          <p id="info" style={{marginTop:"-5px",marginLeft:"80px"}} > ID : #{selectKey?.suspect} </p>
-          
-          </div>
-          
-          <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
-         
+          {
+            selectKey?.suspect &&
+            <>
+              <Divider />
+              <p id="labz">Suspect</p>
+              <div class="suspect_box" style={{ marginLeft: "50px", marginTop: "0px", paddingLeft: "20px", paddingTop: "30px", height: "130px", width: "80%", borderRadius: "15px", border: "1px solid #eee" }}>
+                <img src={
+                  suspect?.criminalPhotoFileName ?
+                    suspect?.criminalPhotoFileName
+                    :
+                    "https://www.svgrepo.com/download/295402/user-profile.svg"}
+                  style={{ borderRadius: "15PX", height: "70px", width: "70px", }} />
+                <p id="info_inspect" style={{ marginTop: "-70px", marginLeft: "80px", fontSize: "20px", fontWeight: "bold", color: "black" }} > Name : {suspect?.name} </p>
+                <p id="info" style={{ marginTop: "-5px", marginLeft: "80px" }} > ID : #{selectKey?.suspect} </p>
+              </div>
+              <hr style={{ height: '8px', color: "transparent", backgroundColor: "transparent", border: "none" }} />
+            </>
+          }
+
+
+
           <Divider />
 
           <p id="labz">Victim Details</p>
@@ -318,44 +369,52 @@ function CrimeTable() {
           <Divider />
           <p id="labz">Police Report</p>
           <p id="info">Report : {selectKey?.policeReport.details}</p>
-          <br/>
-          <div className="police-button-container">
-            <Button
-              variant="contained"
-              color="primary"
-              style={{color:"white"}}
-              disabled={policedownloading}
-              onClick={handlePoliceDownload}
-              className={`download-button ${policedownloading ? 'downloading' : ''}`}
-              startIcon={<CloudDownloadIcon />}
-            >
-              {policedownloading ? 'Downloading...' : 'Download'}
-            </Button>
-          </div>
+          <br />
+          {
+            selectKey?.policeReport.filename &&
+            <div className="police-button-container">
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ color: "white" }}
+                disabled={policedownloading}
+                onClick={() => handlePoliceDownload(selectKey?.policeReport.filename)}
+                className={`download-button ${policedownloading ? 'downloading' : ''}`}
+                startIcon={<CloudDownloadIcon />}
+              >
+                {policedownloading ? 'Downloading...' : 'Download'}
+              </Button>
+            </div>
+          }
+
 
           <Divider />
 
           <p id="labz">Media Report</p>
           <p id="info">Report : {selectKey?.mediaReport.details}</p>
-          <br/>
-         
-          <div className="button-container">
-            <Button
-              variant="contained"
-              color="primary"
-              style={{color:"white"}}
-              disabled={downloading}
-              onClick={handleDownload}
-              className={`download-button ${downloading ? 'downloading' : ''}`}
-              startIcon={<CloudDownloadIcon />}
-            >
-              {downloading ? 'Downloading...' : 'Download'}
-            </Button>
-          </div>
+          <br />
+          {
+            selectKey?.mediaReport.filename &&
+            <div className="button-container">
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ color: "white" }}
+                disabled={downloading}
+                onClick={() => handleMediaDownload(selectKey?.mediaReport.filename)}
+                className={`download-button ${downloading ? 'downloading' : ''}`}
+                startIcon={<CloudDownloadIcon />}
+              >
+                {downloading ? 'Downloading...' : 'Download'}
+              </Button>
+            </div>
+          }
+
+
           <br />
         </div>
       </div>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 }
 
